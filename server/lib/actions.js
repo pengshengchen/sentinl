@@ -237,7 +237,9 @@ export default function doActions(server, actions, payload, watcherTitle) {
     *      				"username" : "username",
     *      				"password" : "password",
     *      				"delay" : 15,
-    *             "crop" : false
+    *             "crop" : false  
+    *             "filesize_throttle" : 0,
+    *             "delete_reportfile" : true
     *         }
     *       },
     *      "stateless" : false
@@ -273,10 +275,6 @@ export default function doActions(server, actions, payload, watcherTitle) {
       } catch (error) {
         server.log(['status', 'info', 'Sentinl', 'report'], 'ERROR: ' + error);
       }
-      //start peng-sheng,chen add
-      const filesize_throttle = config.settings.report.filesize_throttle ? config.settings.report.filesize_throttle : 0;
-      const delete_reportfile = config.settings.report.delete_snapshot_file ? config.settings.delete_reportfile : true;
-      //end peng-sheng,chen add
       horsemanFactory(server, domain)
       .then((horseman) => {
         var filename = 'report-' + Math.random().toString(36).substr(2, 9) + '.png';
@@ -291,18 +289,22 @@ export default function doActions(server, actions, payload, watcherTitle) {
           .then(function () {
             server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot ready for url:' + action.report.snapshot.url);
             //start peng-sheng,chen add
+            const delete_reportfile = action.report.snapshot.params.delete_reportfile ? action.report.snapshot.params.delete_reportfile : true;
+            const filesize_throttle = action.report.snapshot.params.filesize_throttle ? action.report.snapshot.params.filesize_throttle : 0;
+            server.log(['status', 'info', 'Sentinl', 'report'], 'action.report.snapshot.params.delete_snapshot_file:' + delete_reportfile);
+            server.log(['status', 'info', 'Sentinl', 'report'], 'action.report.snapshot.params.filesize_throttle:' + delete_reportfile);
             var stats = fs.statSync(action.report.snapshot.path + filename)
             var fileSizeInBytes = stats.size
             //Convert the file size to kilobytes (optional)
             var fileSizeInKilobytes = fileSizeInBytes / 1000.0
-             server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot File Size(KB):' + fileSizeInKilobytes);
-           if ( filesize_throttle > 0 && fileSizeInKilobytes < filesize_throttle) {
+            server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot File Size(KB):' + fileSizeInKilobytes);
+            if ( filesize_throttle > 0 && fileSizeInKilobytes < filesize_throttle) {
              server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot File Size lower then snapshot_size_throttle: snapshot_size_throttle:' + snapshot_size_throttle + 'file size()KB:'+ fileSizeInKilobytes);
              if (delete_reportfile){
               fs.unlinkSync(action.report.snapshot.path + filename);
              }
              doActions(server, actions, payload, watcherTitle);
-           }
+            }
            //end peng-sheng,chen add
             emailServer.send({
               text: body,
