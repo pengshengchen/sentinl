@@ -238,8 +238,8 @@ export default function doActions(server, actions, payload, watcherTitle) {
     *      				"password" : "password",
     *      				"delay" : 15,
     *             "crop" : false  
-    *             "filesize_throttle" : 0,
-    *             "delete_reportfile" : true
+    *             "file_size_throttle" : 0,
+    *             "delete_report_file" : true
     *         }
     *       },
     *      "stateless" : false
@@ -298,8 +298,8 @@ export default function doActions(server, actions, payload, watcherTitle) {
           .then(function () {
             server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot ready for url:' + action.report.snapshot.url);
             //start peng-sheng,chen add
-            const delete_reportfile = action.report.snapshot.params.delete_reportfile ? action.report.snapshot.params.delete_reportfile : true;
-            const filesize_throttle = action.report.snapshot.params.filesize_throttle ? action.report.snapshot.params.filesize_throttle : 0;
+            const delete_reportfile = action.report.snapshot.params.delete_report_file ? action.report.snapshot.params.delete_report_file : true;
+            const filesize_throttle = action.report.snapshot.params.file_size_throttle ? action.report.snapshot.params.file_size_throttle : 0;
             server.log(['status', 'info', 'Sentinl', 'report'], 'action.report.snapshot.params.delete_snapshot_file:' + delete_reportfile);
             server.log(['status', 'info', 'Sentinl', 'report'], 'action.report.snapshot.params.filesize_throttle:' + delete_reportfile);
             var stats = fs.statSync(action.report.snapshot.path + filename)
