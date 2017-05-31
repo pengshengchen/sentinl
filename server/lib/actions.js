@@ -27,7 +27,7 @@ import logHistory from './log_history';
 
 import url from 'url';
 
-export default function (server, actions, payload, watcherTitle) {
+export default function doActions(server, actions, payload, watcherTitle) {
 
   const { callWithRequest } = getElasticsearchClient(server);
   const config = getConfiguration(server);
@@ -273,7 +273,10 @@ export default function (server, actions, payload, watcherTitle) {
       } catch (error) {
         server.log(['status', 'info', 'Sentinl', 'report'], 'ERROR: ' + error);
       }
-
+      //start peng-sheng,chen add
+      const filesize_throttle = config.settings.report.filesize_throttle ? config.settings.report.filesize_throttle : 0;
+      const delete_reportfile = config.settings.report.delete_snapshot_file ? config.settings.delete_reportfile : true;
+      //end peng-sheng,chen add
       horsemanFactory(server, domain)
       .then((horseman) => {
         var filename = 'report-' + Math.random().toString(36).substr(2, 9) + '.png';
@@ -287,6 +290,20 @@ export default function (server, actions, payload, watcherTitle) {
           //.pdf(action.report.snapshot.path + filename)
           .then(function () {
             server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot ready for url:' + action.report.snapshot.url);
+            //start peng-sheng,chen add
+            var stats = fs.statSync(action.report.snapshot.path + filename)
+            var fileSizeInBytes = stats.size
+            //Convert the file size to kilobytes (optional)
+            var fileSizeInKilobytes = fileSizeInBytes / 1000.0
+             server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot File Size(KB):' + fileSizeInKilobytes);
+           if ( filesize_throttle > 0 && fileSizeInKilobytes < filesize_throttle) {
+             server.log(['status', 'info', 'Sentinl', 'report'], 'Snapshot File Size lower then snapshot_size_throttle: snapshot_size_throttle:' + snapshot_size_throttle + 'file size()KB:'+ fileSizeInKilobytes);
+             if (delete_reportfile){
+              fs.unlinkSync(action.report.snapshot.path + filename);
+             }
+             doActions(server, actions, payload, watcherTitle);
+           }
+           //end peng-sheng,chen add
             emailServer.send({
               text: body,
               from: action.report.from,
@@ -313,7 +330,9 @@ export default function (server, actions, payload, watcherTitle) {
                   esHistory(watcherTitle, key, body, priority, payload, true);
                 }
               }
-              fs.unlinkSync(action.report.snapshot.path + filename);
+              if (delete_reportfile){
+                fs.unlinkSync(action.report.snapshot.path + filename);
+              }
               payload.message = err || message;
 
             });
