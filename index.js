@@ -75,7 +75,9 @@ export default function (kibana) {
           }).default(),
           report: Joi.object({
             active: Joi.boolean().default(false),
-            tmp_path: Joi.string().default('/tmp/')
+            tmp_path: Joi.string().default('/tmp/'),
+            filesize_throttle: Joi.number().default(0), //peng-sheng add
+            delete_reportfile: Joi.boolean().default(true) //peng-sheng add
           }).default(),
           pushapps: Joi.object({
             active: Joi.boolean().default(false),
