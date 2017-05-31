@@ -280,8 +280,17 @@ export default function doActions(server, actions, payload, watcherTitle) {
         var filename = 'report-' + Math.random().toString(36).substr(2, 9) + '.png';
         server.log(['status', 'info', 'Sentinl', 'report'], 'Creating Report for ' + action.report.snapshot.url);
         try {
+          //start peng-sheng,chen add
+          var vert_res = 1280;
+          var hrz_res = 900;
+          if (_.has(action, 'report.snapshot.res')) {
+            var res = action.report.snapshot.res;
+            var res_arr = str.toString().split(",");
+            vert_res = parseInt(res_arr[0], 10);
+            hrz_res = parseInt(res_arr[1], 10);
+          }
           horseman
-          .viewport(1280, 900)
+          .viewport(vert_res, hrz_res)  //end peng-sheng,chen add
           .open(action.report.snapshot.url)
           .wait(action.report.snapshot.params.delay)
           .screenshot(action.report.snapshot.path + filename)
