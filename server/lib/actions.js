@@ -289,6 +289,10 @@ export default function doActions(server, actions, payload, watcherTitle) {
             vert_res = parseInt(res_arr[0], 10);
             hrz_res = parseInt(res_arr[1], 10);
           }
+          if (_.has(action, 'report.snapshot.params.loop_count')) {
+            action.report.snapshot.params.loop_count = new Number(10);
+          }
+          server.log(['status', 'info', 'Sentinl', 'report'], 'Loop count:' + action.report.snapshot.params.loop_count);
           horseman
           .viewport(vert_res, hrz_res)  //end peng-sheng,chen add
           .open(action.report.snapshot.url)
@@ -312,7 +316,11 @@ export default function doActions(server, actions, payload, watcherTitle) {
              if (delete_reportfile){
               fs.unlinkSync(action.report.snapshot.path + filename);
              }
-             doActions(server, actions, payload, watcherTitle);
+             if ( action.report.snapshot.params.loop_count > 0 ){
+               server.log(['status', 'info', 'Sentinl', 'report'], 'Loop Again ! loop count:' + action.report.snapshot.params.loop_count);
+               doActions(server, actions, payload, watcherTitle);
+               action.report.snapshot.params.loop_count = action.report.snapshot.params.loop_count - 1;
+             }
             }
            //end peng-sheng,chen add
             emailServer.send({
